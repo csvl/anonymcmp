@@ -1,0 +1,19 @@
+anonymcmp
+
+We recommend to use docker for runnig our jupyter notebooks in the required environment as following:
+
+1. Build our custom docker image in the current directory
+	%./build_dockerimage.sh
+
+2. Run a docker container to start jupyter
+	%./run_jupyter.sh
+
+3. Open localhost:8888 and follow the jupyter instruction
+
+
+To run the test scripts
+
+1. Replace script filename (anonymization_adult-levels-NN1.py by default) with one in test directory
+
+2. Run a docker container to run the python script
+    %./run_testscript.sh
