@@ -20,6 +20,9 @@ COPY anonymcmp_utils anonymcmp_utils
 RUN wget https://github.com/IBM/differential-privacy-library/archive/refs/tags/0.6.2.tar.gz \
 && tar zxvpf 0.6.2.tar.gz --strip-components=1 && rm 0.6.2.tar.gz 
 
+RUN wget https://github.com/tensorflow/privacy/archive/refs/tags/v0.8.5.tar.gz \
+&& tar zxvpf v0.8.5.tar.gz --strip-components=1 && rm v0.8.5.tar.gz
+
 ENV NOTEBOOKS_PATH /tf/dev/notebooks
 COPY notebooks $NOTEBOOKS_PATH
 RUN mkdir -p $NOTEBOOKS_PATH/datasets

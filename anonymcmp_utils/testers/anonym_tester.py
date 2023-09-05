@@ -114,11 +114,10 @@ class AnonymTester:
                                              y_test, 0.2)
             for k in k_trials]
 
-        if not self.isNNSubClass():
-            accuracies['Differential privacy'] = [
-                self.measure_difpriv_accuracies(eps, categorical_features, x_train_encoded, preprocessor, y_train,
-                                                x_test_encoded, y_test)
-                for eps in epsilons]
+        accuracies['Differential privacy'] = [
+            self.measure_difpriv_accuracies(eps, categorical_features, x_train_encoded, preprocessor, y_train,
+                                            x_test_encoded, y_test)
+            for eps in epsilons]
 
         return accuracies
 
