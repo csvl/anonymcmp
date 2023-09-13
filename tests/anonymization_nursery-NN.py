@@ -23,7 +23,7 @@ plot_path = 'results/plots/'
 fname_base = 'anonymization_nursery-NN'
 imfname = fname_base + '.png'
 
-yminmax_list = [[0.35, 1.0], [0.35, 1.0], [0.35, 1.0], [0.35, 1.0], [0.35, 1.0]]
+yminmax_list = [[0.2, 1.0], [0.35, 1.0], [0.35, 1.0], [0.35, 1.0], [0.35, 1.0]]
 
 results_utils.save_results([plot_path+'inference/'+imfname,
                             plot_path+'member_attack/'+imfname,

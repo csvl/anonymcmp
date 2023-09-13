@@ -3,6 +3,7 @@ import dp_accounting
 import numpy as np
 from scipy import interpolate
 from tensorflow_privacy.privacy.optimizers.dp_optimizer_keras import DPKerasAdamOptimizer
+from tensorflow_privacy.privacy.analysis.compute_dp_sgd_privacy import compute_dp_sgd_privacy
 from .anonym_tester import AnonymTester
 
 class AnonymNNTester(AnonymTester):
@@ -15,7 +16,9 @@ class AnonymNNTester(AnonymTester):
         self.epochs = epochs
 
         noise_multipliers = np.linspace(0.1, 1.0).tolist() + [pow(10, i) for i in range(1, 4)]
-        epsilons = [self.compute_epsilon(epochs*sample_len//batch_size, nm, sample_len, batch_size)
+
+        epsilons = [compute_dp_sgd_privacy(n=sample_len, batch_size=batch_size, noise_multiplier=nm, epochs=epochs,
+                                           delta=1 / pow(10, int(np.ceil(np.log10(sample_len)))))[0]
                     for nm in noise_multipliers]
 
         self.f = interpolate.interp1d(np.log(epsilons), np.log(noise_multipliers), kind='slinear', fill_value='extrapolate')
@@ -51,18 +54,3 @@ class AnonymNNTester(AnonymTester):
 
     def compute_noise_multiplier(self, eps):
         return np.e**self.f(np.log(eps))
-
-    def compute_epsilon(self, steps, nm, sample_len, batch_size):
-        if nm == 0.0:
-            return float('inf')
-        orders = [1 + x / 10. for x in range(1, 100)] + list(range(12, 64))
-        accountant = dp_accounting.rdp.RdpAccountant(orders)
-
-        sampling_probability = batch_size / sample_len
-        event = dp_accounting.SelfComposedDpEvent(
-            dp_accounting.PoissonSampledDpEvent(sampling_probability, dp_accounting.GaussianDpEvent(nm)), steps)
-
-        accountant.compose(event)
-
-        return accountant.get_epsilon(target_delta=1 / pow(10, int(np.ceil(np.log10(sample_len)))))
-
