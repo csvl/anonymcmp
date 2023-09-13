@@ -40,9 +40,32 @@ class AnonymTester:
 
         acc_proc = self.measure_anonym_accuracies(x_train, categorical_features, QI, self.sensitive_column, preprocessor,
                                                   x_train_encoded, y_train, k_trials, vanilla_model, x_test_encoded,
-                                                  y_test, epsilons)
+                                                  y_test)
+
+        if epsilons != None:
+            acc_proc['Differential privacy'] = [
+                self.measure_difpriv_accuracies(eps, categorical_features, x_train_encoded, preprocessor, y_train,
+                                                x_test_encoded, y_test)
+                for eps in epsilons]
 
         return acc_vanilla, acc_proc
+
+
+    def perform_anonymtest_QIs(self, x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor, QIs,
+                               k_trials):
+        vanilla_model = self.get_trained_model(x_train_encoded, y_train)
+
+        categorical_features = x_train.select_dtypes(['object']).columns.to_list()
+
+        acc_vanilla = self.measure_accuracies(vanilla_model, x_train_encoded, y_train, x_test_encoded, y_test,
+                                              preprocessor, categorical_features)
+
+        acc_proc_list = [self.measure_anonym_accuracies(x_train, categorical_features, QI, self.sensitive_column,
+                                                        preprocessor, x_train_encoded, y_train, k_trials, vanilla_model,
+                                                        x_test_encoded, y_test)
+                         for QI in QIs]
+
+        return acc_vanilla, acc_proc_list
 
 
     def measure_accuracies(self, optmodel, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor, categorical_features):
@@ -87,8 +110,7 @@ class AnonymTester:
 
 
     def measure_anonym_accuracies(self, x_train, categorical_features, QI, sensitive_column, preprocessor,
-                                  x_train_encoded, y_train, k_trials, vanilla_model, x_test_encoded, y_test,
-                                  epsilons):
+                                  x_train_encoded, y_train, k_trials, vanilla_model, x_test_encoded, y_test):
         x_train_predictions = self.get_predictions(vanilla_model, x_train_encoded)
 
         accuracies = {}
@@ -114,13 +136,7 @@ class AnonymTester:
                                              y_test, 0.2)
             for k in k_trials]
 
-        accuracies['Differential privacy'] = [
-            self.measure_difpriv_accuracies(eps, categorical_features, x_train_encoded, preprocessor, y_train,
-                                            x_test_encoded, y_test)
-            for eps in epsilons]
-
         return accuracies
-
 
     def measure_mlanoym_accuracies(self, k, QI, categorical_features, x_train, x_train_predictions, y_train, preprocessor,
                                    x_train_encoded, x_test_encoded, y_test):
