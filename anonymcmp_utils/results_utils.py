@@ -45,7 +45,9 @@ def plot_anoresult(fname, k_trials, ylabel, acc_proc, acc_vanilla, ylim_min, yli
 
     labs = [l.get_label() for l in lns]
 
-    export_legend(ax.legend(lns, labs, loc=3, framealpha=1, frameon=True), fname.replace('.', '_legend.'))
+    legend = ax.legend(lns, labs, loc=3, framealpha=1, frameon=True)
+    export_legend(legend, fname.replace('.', '_legend.'))
+    legend.remove()
 
     fig.tight_layout()
     plt.savefig(fname)
