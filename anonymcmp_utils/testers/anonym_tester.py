@@ -114,7 +114,7 @@ class AnonymTester:
         x_train_predictions = self.get_predictions(vanilla_model, x_train_encoded)
 
         accuracies = {}
-        accuracies['ML'] = [
+        accuracies['AG'] = [
             self.measure_mlanoym_accuracies(k, QI, categorical_features, x_train, x_train_predictions, y_train,
                                             preprocessor, x_train_encoded, x_test_encoded, y_test)
             for k in k_trials]
