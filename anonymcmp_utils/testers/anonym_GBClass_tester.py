@@ -17,7 +17,7 @@ class AnonymGBClassTester(AnonymNNTester):
         model = self.get_model(x.shape[1])
         model.compile(optimizer=keras.optimizers.Adam(learning_rate=self.learning_rate), loss=self.loss,
                       metrics=['accuracy'])
-        model.fit(x, y.to_numpy(), epochs=self.epochs)
+        model.fit(x, y.to_numpy(), epochs=self.epochs, verbose=0)
 
         return model
 
