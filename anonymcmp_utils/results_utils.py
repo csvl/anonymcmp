@@ -26,7 +26,7 @@ def plot_mean_std(ax, x, acc, m, k, color=None):
 
     return ln
 
-def plot_anoresult(fname, k_trials, ylabel, acc_proc, acc_vanilla, ylim_min, ylim_max, epsilons):
+def plot_anoresult(fname, k_trials, ylabel, acc_proc, acc_vanilla, ylim_min, ylim_max, epsilons=None):
     fig, ax = plt.subplots()
 
     markers = ['-s', '-^', '-o', '-<']
