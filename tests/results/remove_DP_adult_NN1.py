@@ -1,7 +1,7 @@
 import numpy as np
 from anonymcmp_utils import results_utils
 
-acc_vanilla, acc_proc = np.load('data/anonymization_adult-levels-NN1.npy', allow_pickle=True)
+acc_vanilla, acc_proc = np.load('data/anonymization_adult-NN1.npy', allow_pickle=True)
 
 acc_proc.pop('Differential privacy')
 

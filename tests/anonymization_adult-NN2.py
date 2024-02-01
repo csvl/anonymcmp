@@ -21,7 +21,7 @@ acc_vanilla, acc_proc = tester.perform_test(x_train, x_train_encoded, y_train, x
                                             QI, k_trials, epsilons)
 
 plot_path = 'results/plots/'
-fname_base = 'anonymization_adult-levels-NN2'
+fname_base = 'anonymization_adult-NN2'
 imfname = fname_base + '.png'
 yminmax_list = [[0.6, 0.9], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0]]
 
