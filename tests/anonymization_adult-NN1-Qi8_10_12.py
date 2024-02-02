@@ -18,16 +18,16 @@ QIs = [['workclass', 'education-num', 'marital-status', 'occupation', 'relations
        'capital-gain', 'capital-loss', 'hours-per-week', 'native-country']]
 
 tester = AnonymGBClass1Tester(attack_column='relationship', sensitive_column='relationship',
-                              input_veclen=x_train_encoded.shape[1], sample_len=len(x_train))
+                              input_veclen=x_train_encoded.shape[1], sample_len=len(x_train), learning_rate=0.0001)
 
 acc_vanilla, acc_proc_list = tester.perform_anonymtest_QIs(x_train, x_train_encoded, y_train, x_test_encoded, y_test,
-                                                      preprocessor, QIs, k_trials)
+                                                           preprocessor, QIs, k_trials)
 
 plot_path = 'results/plots/'
 yminmax_list = [[0.6, 0.9], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0]]
 
 def save_results(QI, acc_proc):
-    fname_base = 'anonymization_adult-levels-NN1-Qi' + str(len(QI))
+    fname_base = 'anonymization_adult-NN1-Qi' + str(len(QI))
     imfname = fname_base + '.png'
 
     results_utils.save_results([plot_path+'inference/'+imfname,
