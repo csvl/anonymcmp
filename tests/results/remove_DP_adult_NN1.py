@@ -9,7 +9,7 @@ k_trials = (50, 100, 200, 400, 800, 1000)
 
 fname_base = 'anonymization_adult-NN1_withoutDP'
 imfname = fname_base + '.png'
-yminmax_list = [[0.7, 0.9], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0]]
+yminmax_list = [[0.6, 0.9], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0]]
 
 fname_list = ['plots/inference/'+imfname,
               'plots/member_attack/'+imfname,
