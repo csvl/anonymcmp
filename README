@@ -13,7 +13,7 @@ We recommend to use docker for runnig our jupyter notebooks in the required envi
 
 To run the test scripts
 
-1. Replace script filename (anonymization_adult-levels-NN1.py by default) with one in test directory
+1. Replace script filename (anonymization_adult-NN1.py by default) with one in test directory
 
 2. Run a docker container to run the python script
     %./run_testscript.sh
