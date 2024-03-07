@@ -18,7 +18,7 @@ class AnonymNNTester(AnonymTester):
         noise_multipliers = np.linspace(0.1, 1.0).tolist() + [pow(10, i) for i in range(1, 4)]
 
         epsilons = [compute_dp_sgd_privacy(n=sample_len, batch_size=batch_size, noise_multiplier=nm, epochs=epochs,
-                                           delta=1 / pow(10, int(np.ceil(np.log10(sample_len)))))[0]
+                                           delta=1 / (sample_len*sample_len))[0]
                     for nm in noise_multipliers]
 
         self.f = interpolate.interp1d(np.log(epsilons), np.log(noise_multipliers), kind='slinear', fill_value='extrapolate')
