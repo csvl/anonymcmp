@@ -13,12 +13,16 @@ class AnonymG4ClassTester(AnonymNNTester):
     def get_model(self, invec_size):
         return Goldsteen4ClassModel(keras.layers.Input(shape=(invec_size,)))
 
-    def get_trained_model(self, x, y):
+    def get_trained_model(self, x, y, fname=None):
         assert (self.input_veclen == x.shape[1])
         model = self.get_model(x.shape[1])
         model.compile(optimizer=keras.optimizers.Adam(learning_rate=self.learning_rate), loss=self.loss,
                       metrics=['accuracy'])
         model.fit(x, to_categorical(y.to_numpy()), epochs=self.epochs, verbose=0)
+
+        if fname is not None:
+            model.save(fname)
+
         return model
 
     def get_prediction_accuracy(self, optmodel, x_test_encoded, y_test):
@@ -31,9 +35,12 @@ class AnonymG4ClassTester(AnonymNNTester):
         return model.predict(x).argmax(axis=1).reshape(-1,1)
 
     def measure_difpriv_accuracies(self, eps, categorical_features, x_train_encoded, preprocessor, y_train,
-                                   x_test_encoded, y_test):
+                                   x_test_encoded, y_test, model_path=None):
         dp_clf = self.get_diffpriv_classifier(eps)
         dp_clf.fit(x_train_encoded, to_categorical(y_train.to_numpy()), epochs=self.epochs)
+
+        if model_path is not None:
+            self.save_dpmodel(dp_clf, model_path)
 
         return self.measure_accuracies(dp_clf, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
                                        categorical_features)

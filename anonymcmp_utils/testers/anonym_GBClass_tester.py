@@ -12,12 +12,15 @@ class AnonymGBClassTester(AnonymNNTester):
     def get_model(self, invec_size):
         pass
 
-    def get_trained_model(self, x, y):
+    def get_trained_model(self, x, y, fname=None):
         assert (self.input_veclen == x.shape[1])
         model = self.get_model(x.shape[1])
         model.compile(optimizer=keras.optimizers.Adam(learning_rate=self.learning_rate), loss=self.loss,
                       metrics=['accuracy'])
         model.fit(x, y.to_numpy(), epochs=self.epochs, verbose=0)
+
+        if fname is not None:
+            model.save(fname)
 
         return model
 
@@ -31,9 +34,12 @@ class AnonymGBClassTester(AnonymNNTester):
         return (model.predict(x) >= 0.5).astype('int')
 
     def measure_difpriv_accuracies(self, eps, categorical_features, x_train_encoded, preprocessor, y_train,
-                                   x_test_encoded, y_test):
+                                   x_test_encoded, y_test, model_path=None):
         dp_clf = self.get_diffpriv_classifier(eps)
         dp_clf.fit(x_train_encoded, y_train, epochs=self.epochs)
+
+        if model_path is not None:
+            self.save_dpmodel(dp_clf, model_path)
 
         return self.measure_accuracies(dp_clf, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
                                        categorical_features)

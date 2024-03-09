@@ -4,6 +4,7 @@ import numpy as np
 from scipy import interpolate
 from tensorflow_privacy.privacy.optimizers.dp_optimizer_keras import DPKerasAdamOptimizer
 from tensorflow_privacy.privacy.analysis.compute_dp_sgd_privacy import compute_dp_sgd_privacy
+from tensorflow import keras
 from .anonym_tester import AnonymTester
 
 class AnonymNNTester(AnonymTester):
@@ -23,8 +24,11 @@ class AnonymNNTester(AnonymTester):
 
         self.f = interpolate.interp1d(np.log(epsilons), np.log(noise_multipliers), kind='slinear', fill_value='extrapolate')
 
-    def get_trained_model(self, x, y):
+    def get_trained_model(self, x, y, fname=None):
         pass
+
+    def load_trained_model(self, fname):
+        return keras.saving.load_model(fname)
 
     def get_prediction_accuracy(self, optmodel, x_test_encoded, y_test):
         pass
@@ -36,7 +40,7 @@ class AnonymNNTester(AnonymTester):
         pass
 
     def measure_difpriv_accuracies(self, eps, categorical_features, x_train_encoded, preprocessor, y_train,
-                                   x_test_encoded, y_test):
+                                   x_test_encoded, y_test, model_path):
         pass
 
     def get_diffpriv_classifier(self, eps):
@@ -48,6 +52,10 @@ class AnonymNNTester(AnonymTester):
                                                      noise_multiplier=nm, num_microbatches=1),
                       loss=self.loss, metrics=['accuracy'])
         return model
+
+    def save_dpmodel(self, model, fname):
+        model.save(fname)
+
 
     def isNNSubClass(selfs):
         return True

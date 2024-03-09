@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from art.estimators.classification.scikitlearn import ScikitlearnDecisionTreeClassifier
 import diffprivlib.models as dp
+from joblib import dump, load
 from .anonym_tester import AnonymTester
 
 class AnonymDTTester(AnonymTester):
@@ -9,12 +10,14 @@ class AnonymDTTester(AnonymTester):
         super(AnonymDTTester, self).__init__(attack_column, sensitive_column)
         self.max_depth = max_depth
 
-    def get_trained_model(self, x, y):
+    def get_trained_model(self, x, y, fname=None):
         model = DecisionTreeClassifier(max_depth=self.max_depth)
         model = model.fit(x, y)
 
-        return model
+        if fname is not None:
+            dump(model, fname)
 
+        return model
 
     def get_prediction_accuracy(self, optmodel, x_test_encoded, y_test):
         pred_acc = optmodel.score(x_test_encoded, y_test)
@@ -32,3 +35,6 @@ class AnonymDTTester(AnonymTester):
 
     def get_diffpriv_classifier(self, eps):
         return dp.DecisionTreeClassifier(epsilon=eps, max_depth=self.max_depth)
+
+    def save_dpmodel(self, model, fname):
+        dump(model, fname)

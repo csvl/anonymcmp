@@ -12,18 +12,19 @@ x_test_encoded = preprocessor.transform(x_test)
 k_trials = (50, 100, 200, 400, 800, 1000)
 epsilons = [0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2.5, 5.0, 7.5, 10.0]
 
-QI = ["finance", "social", "health"]
+QI = ["finance", "children", "health"]
 
-tester = AnonymRFTester(attack_column='social', sensitive_column='health', max_depth=10)
+tester = AnonymRFTester(attack_column='social', sensitive_column='social', max_depth=10)
+
+fname_base = 'anonymization_nursery-randforest'
 
 acc_vanilla, acc_proc = tester.perform_test(x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
-                                            QI, k_trials, epsilons, multitest_vanilla=True)
+                                            QI, k_trials, epsilons, multitest_vanilla=True,
+                                            model_path='results/models/'+fname_base)
 
 plot_path = 'results/plots/'
-fname_base = 'anonymization_nursery-randforest'
 imfname = fname_base + '.png'
-
-yminmax_list = [[0.2, 1.0], [0.35, 1.0], [0.35, 1.0], [0.35, 1.0], [0.35, 1.0]]
+yminmax_list = [[0.3, 1.0], [0.35, 1.0], [0.35, 1.0], [0.35, 1.0], [0.35, 1.0]]
 
 results_utils.save_results([plot_path+'inference/'+imfname,
                             plot_path+'member_attack/'+imfname,

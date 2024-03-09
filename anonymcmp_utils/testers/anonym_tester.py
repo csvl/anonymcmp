@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from apt.utils.datasets import ArrayDataset
 from apt.anonymization import Anonymize
 from mondrian import anonymize, MondrianOption
@@ -11,7 +12,7 @@ class AnonymTester:
         self.attack_column = attack_column
         self.sensitive_column = sensitive_column
 
-    def get_trained_model(self, x, y):
+    def get_trained_model(self, x, y, fname=None):
         pass
 
     def get_prediction_accuracy(self):
@@ -26,34 +27,39 @@ class AnonymTester:
     def get_diffpriv_classifier(self, eps):
         pass
 
+    def save_dpmodel(self, model, fname):
+        pass
+
     def isNNSubClass(selfs):
         return False
 
     def perform_test(self, x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor, QI, k_trials,
-                     epsilons=None, numtest=10, multitest_vanilla=False):
+                     epsilons=None, numtest=10, multitest_vanilla=False, model_path=None):
 
         categorical_features = x_train.select_dtypes(['object']).columns.to_list()
 
         list_accvanilla = []
+
+        if model_path is not None and not os.path.exists(model_path):
+            os.mkdir(model_path)
+
         for i in range(numtest if multitest_vanilla else 1):
-            print(i)
-            vanilla_model = self.get_trained_model(x_train_encoded, y_train)
+            vanilla_model = self.get_trained_model(x_train_encoded, y_train, model_path + '/vanilla_%d'%i)
             acc_vanilla = self.measure_accuracies(vanilla_model, x_train_encoded, y_train, x_test_encoded, y_test,
                                                   preprocessor, categorical_features)
             list_accvanilla.append(acc_vanilla)
 
         acc_proc = self.measure_anonym_accuracies(x_train, categorical_features, QI, self.sensitive_column, preprocessor,
                                                   x_train_encoded, y_train, k_trials, vanilla_model, x_test_encoded,
-                                                  y_test, numtest)
+                                                  y_test, numtest, model_path)
 
         if epsilons != None:
             acc_proc['Differential privacy'] = [
                 [self.measure_difpriv_accuracies(eps, categorical_features, x_train_encoded, preprocessor, y_train,
-                                                 x_test_encoded, y_test) for _ in range(numtest)]
+                                                 x_test_encoded, y_test, model_path + '/DP_%d'%i) for i in range(numtest)]
                 for eps in epsilons]
 
         return np.array(list_accvanilla), acc_proc
-
 
     def perform_anonymtest_QIs(self, x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor, QIs,
                                k_trials, numtest=10):
@@ -113,67 +119,72 @@ class AnonymTester:
 
 
     def measure_anonym_accuracies(self, x_train, categorical_features, QI, sensitive_column, preprocessor,
-                                  x_train_encoded, y_train, k_trials, vanilla_model, x_test_encoded, y_test, numtest):
+                                  x_train_encoded, y_train, k_trials, vanilla_model, x_test_encoded, y_test, numtest,
+                                  model_path):
         x_train_predictions = self.get_predictions(vanilla_model, x_train_encoded)
 
         accuracies = {}
         accuracies['AG'] = [
             [self.measure_mlanoym_accuracies(k, QI, categorical_features, x_train, x_train_predictions, y_train,
-                                            preprocessor, x_train_encoded, x_test_encoded, y_test)
-             for _ in range(numtest)]
+                                             preprocessor, x_train_encoded, x_test_encoded, y_test,
+                                             model_path + '/AG_%d'%i) for i in range(numtest)]
             for k in k_trials]
 
         accuracies['Mondrian'] = [
             [self.measure_mondrian_accuracies(k, MondrianOption.Non, x_train, categorical_features, QI, sensitive_column,
-                                             preprocessor, x_train_encoded, y_train, x_test_encoded, y_test)
-             for _ in range(numtest)]
+                                              preprocessor, x_train_encoded, y_train, x_test_encoded, y_test,
+                                              model_fname = model_path + '/Mondrian_%d'%i) for i in range(numtest)]
             for k in k_trials]
 
         accuracies['l-diverse'] = [
             [self.measure_mondrian_accuracies(k, MondrianOption.ldiv, x_train, categorical_features, QI,
                                               sensitive_column, preprocessor, x_train_encoded, y_train, x_test_encoded,
-                                              y_test, 2) for _ in range(numtest)]
+                                              y_test, 2, model_path + '/l-diverse_%d'%i) for i in range(numtest)]
             for k in k_trials]
 
         accuracies['t-closeness'] = [
             [self.measure_mondrian_accuracies(k, MondrianOption.tclose, x_train, categorical_features, QI,
                                               sensitive_column, preprocessor, x_train_encoded, y_train, x_test_encoded,
-                                              y_test, 0.2) for _ in range(numtest)]
+                                              y_test, 0.2, model_path + '/t-closeness_%d'%i)
+             for i in range(numtest)]
             for k in k_trials]
 
         return accuracies
 
     def measure_mlanoym_accuracies(self, k, QI, categorical_features, x_train, x_train_predictions, y_train, preprocessor,
-                                   x_train_encoded, x_test_encoded, y_test):
+                                   x_train_encoded, x_test_encoded, y_test, model_fname):
         anonymizer = Anonymize(k, QI, categorical_features=categorical_features)
         anon = anonymizer.anonymize(ArrayDataset(x_train, x_train_predictions))
         anon = anon.astype(x_train.dtypes)
 
         anon_encoded = preprocessor.transform(anon)
 
-        anon_model = self.get_trained_model(anon_encoded, y_train)
+        anon_model = self.get_trained_model(anon_encoded, y_train, model_fname)
 
         return self.measure_accuracies(anon_model, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
                                        categorical_features)
 
 
     def measure_mondrian_accuracies(self, k, option, x_train, categorical_features, QI, sensitive_column, preprocessor,
-                                    x_train_encoded, y_train, x_test_encoded, y_test, l_or_p=1):
+                                    x_train_encoded, y_train, x_test_encoded, y_test, l_or_p=1, model_fname=None):
         anon = anonymize(x_train, set(categorical_features), QI, sensitive_column, k, option, l_or_p)
         anon = anon.astype(x_train.dtypes)
 
         anon_encoded = preprocessor.transform(anon)
 
-        anon_model = self.get_trained_model(anon_encoded, y_train)
+        anon_model = self.get_trained_model(anon_encoded, y_train, model_fname)
 
         return self.measure_accuracies(anon_model, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
                                        categorical_features)
 
 
     def measure_difpriv_accuracies(self, eps, categorical_features, x_train_encoded, preprocessor, y_train,
-                                   x_test_encoded, y_test):
+                                   x_test_encoded, y_test, model_path=None):
         dp_clf = self.get_diffpriv_classifier(eps)
         dp_clf = dp_clf.fit(x_train_encoded, y_train)
+
+        if model_path is not None:
+            self.save_dpmodel(dp_clf, model_path)
 
         return self.measure_accuracies(dp_clf, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
                                        categorical_features)
@@ -194,7 +205,7 @@ class AnonymTester:
         x_train_feature = x_train_encoded[:, attack_feature].copy()
 
         # get inferred values
-        values = np.unique(x_train_feature)
+        values = list(np.unique(x_train_feature)) if self.isNNSubClass() else list(np.unique(x_train_feature).astype('int'))
 
         priors = [(x_train_feature == v).sum() / len(x_train_feature) for v in values]
 

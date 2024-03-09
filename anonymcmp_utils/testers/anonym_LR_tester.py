@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from art.estimators.classification.scikitlearn import ScikitlearnLogisticRegression
 import diffprivlib.models as dp
+from joblib import dump, load
 from .anonym_tester import AnonymTester
 
 class AnonymLRTester(AnonymTester):
@@ -9,9 +10,13 @@ class AnonymLRTester(AnonymTester):
         super(AnonymLRTester, self).__init__(attack_column, sensitive_column)
         self.max_iter = max_iter
 
-    def get_trained_model(self, x, y):
+    def get_trained_model(self, x, y, fname=None):
         model = LogisticRegression(solver="lbfgs", max_iter=self.max_iter)
         model = model.fit(x, y)
+
+        if fname is not None:
+            dump(model, fname)
+
         return model
 
     def get_prediction_accuracy(self, optmodel, x_test_encoded, y_test):
@@ -26,3 +31,6 @@ class AnonymLRTester(AnonymTester):
 
     def get_diffpriv_classifier(self, eps):
         return dp.LogisticRegression(epsilon=eps, data_norm=5, max_iter=self.max_iter)
+
+    def save_dpmodel(self, model, fname):
+        dump(model, fname)
