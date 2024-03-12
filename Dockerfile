@@ -29,6 +29,6 @@ RUN mkdir -p $NOTEBOOKS_PATH/datasets
 WORKDIR $NOTEBOOKS_PATH
 
 ENV TESTS_PATH /tf/dev/tests
-COPY tests/ $TESTS_PATH/
+COPY tests/*.py $TESTS_PATH/
 RUN mkdir -p $TESTS_PATH/datasets
 
