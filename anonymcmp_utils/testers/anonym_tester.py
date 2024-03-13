@@ -34,13 +34,13 @@ class AnonymTester:
         return False
 
     def perform_test(self, x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor, QI, k_trials,
-                     epsilons=None, numtest=10, multitest_vanilla=False, model_path=None):
+                     epsilons=None, numtest=10, multitest_vanilla=False, model_path='results/models'):
 
         categorical_features = x_train.select_dtypes(['object']).columns.to_list()
 
         list_accvanilla = []
 
-        if model_path is not None and not os.path.exists(model_path):
+        if not os.path.exists(model_path):
             os.mkdir(model_path)
 
         for i in range(numtest if multitest_vanilla else 1):
