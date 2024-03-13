@@ -56,7 +56,8 @@ class AnonymTester:
         if epsilons != None:
             acc_proc['Differential privacy'] = [
                 [self.measure_difpriv_accuracies(eps, categorical_features, x_train_encoded, preprocessor, y_train,
-                                                 x_test_encoded, y_test, model_path + '/DP_%d'%i) for i in range(numtest)]
+                                                 x_test_encoded, y_test, model_path + '/DP_%d_%.2f' % (i, eps))
+                 for i in range(numtest)]
                 for eps in epsilons]
 
         return np.array(list_accvanilla), acc_proc
@@ -127,25 +128,25 @@ class AnonymTester:
         accuracies['AG'] = [
             [self.measure_mlanoym_accuracies(k, QI, categorical_features, x_train, x_train_predictions, y_train,
                                              preprocessor, x_train_encoded, x_test_encoded, y_test,
-                                             model_path + '/AG_%d'%i) for i in range(numtest)]
+                                             model_path + '/AG_%d_%d' % (i, k)) for i in range(numtest)]
             for k in k_trials]
 
         accuracies['Mondrian'] = [
             [self.measure_mondrian_accuracies(k, MondrianOption.Non, x_train, categorical_features, QI, sensitive_column,
                                               preprocessor, x_train_encoded, y_train, x_test_encoded, y_test,
-                                              model_fname = model_path + '/Mondrian_%d'%i) for i in range(numtest)]
+                                              model_fname = model_path + '/Mondrian_%d_%d' % (i, k)) for i in range(numtest)]
             for k in k_trials]
 
         accuracies['l-diverse'] = [
             [self.measure_mondrian_accuracies(k, MondrianOption.ldiv, x_train, categorical_features, QI,
                                               sensitive_column, preprocessor, x_train_encoded, y_train, x_test_encoded,
-                                              y_test, 2, model_path + '/l-diverse_%d'%i) for i in range(numtest)]
+                                              y_test, 2, model_path + '/l-diverse_%d_%d' % (i, k)) for i in range(numtest)]
             for k in k_trials]
 
         accuracies['t-closeness'] = [
             [self.measure_mondrian_accuracies(k, MondrianOption.tclose, x_train, categorical_features, QI,
                                               sensitive_column, preprocessor, x_train_encoded, y_train, x_test_encoded,
-                                              y_test, 0.2, model_path + '/t-closeness_%d'%i)
+                                              y_test, 0.2, model_path + '/t-closeness_%d_%d' % (i, k))
              for i in range(numtest)]
             for k in k_trials]
 
