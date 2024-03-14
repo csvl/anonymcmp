@@ -14,17 +14,17 @@ epsilons = [0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2.5, 5.0, 7.5, 10.0]
 
 QI = ['age', 'education-num', 'race', 'relationship']
 
-tester = AnonymLRTester(attack_column='relationship', sensitive_column='relationship', max_iter=500)
+tester = AnonymLRTester(attack_column='relationship', sensitive_column='relationship', max_iter=1000) #100, 500, 1000, 2000
 
 fname_base = 'anonymization_adult-logreg'
 
-acc_vanilla, acc_proc = tester.perform_test(x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
-                                            QI, k_trials, epsilons, multitest_vanilla=True,
-                                            model_path='results/models/'+fname_base)
+acc_vanilla, acc_proc = tester.update_dp(x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
+                                         'results/data/'+fname_base+'.npy', epsilons,
+                                         model_path='results/models/'+fname_base)
 
 plot_path = 'results/plots/'
 imfname = fname_base + '.png'
-yminmax_list = [[0.7, 0.9], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0]]
+yminmax_list = [[0.4, 0.9], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0]]
 
 
 results_utils.save_results([plot_path+'inference/'+imfname,
