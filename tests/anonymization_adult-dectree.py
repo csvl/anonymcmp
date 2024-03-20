@@ -12,16 +12,17 @@ x_test_encoded = preprocessor.transform(x_test)
 k_trials = (50, 100, 200, 400, 800, 1000)
 epsilons = [0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2.5, 5.0, 7.5, 10.0]
 
-QI = ['age', 'education-num', 'race', 'relationship']
+QI = ['age', 'education-num', 'race', 'native-country']
 
 tester = AnonymDTTester(attack_column='relationship', sensitive_column='relationship', max_depth=20)
 
-acc_vanilla, acc_proc = tester.perform_test(x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
-                                            QI, k_trials, epsilons, multitest_vanilla=True)
+fname_base = 'anonymization_adult-dectree'
 
+acc_vanilla, acc_proc = tester.perform_test(x_train, x_train_encoded, y_train, x_test_encoded, y_test, preprocessor,
+                                            QI, k_trials, epsilons, multitest_vanilla=True,
+                                            model_path='results/models/'+fname_base)
 
 plot_path = 'results/plots/'
-fname_base = 'anonymization_adult-dectree'
 imfname = fname_base + '.png'
 yminmax_list = [[0.7, 0.9], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0], [0.55, 1.0]]
 
