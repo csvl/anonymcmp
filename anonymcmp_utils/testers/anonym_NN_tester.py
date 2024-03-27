@@ -28,7 +28,7 @@ class AnonymNNTester(AnonymTester):
         pass
 
     def load_trained_model(self, fname):
-        return keras.saving.load_model(fname)
+        return keras.models.load_model(fname)
 
     def get_prediction_accuracy(self, optmodel, x_test_encoded, y_test):
         pass
