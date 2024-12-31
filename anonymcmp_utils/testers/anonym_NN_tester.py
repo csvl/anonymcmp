@@ -5,16 +5,20 @@ from scipy import interpolate
 from tensorflow_privacy.privacy.optimizers.dp_optimizer_keras import DPKerasAdamOptimizer
 from tensorflow_privacy.privacy.analysis.compute_dp_sgd_privacy import compute_dp_sgd_privacy
 from tensorflow import keras
+import tensorflow as tf
 from .anonym_tester import AnonymTester
 
 class AnonymNNTester(AnonymTester):
-    def __init__(self, attack_column, sensitive_column, input_veclen, sample_len, learning_rate, loss, epochs=100, batch_size=32):
+    def __init__(self, attack_column, sensitive_column, input_veclen, sample_len, learning_rate, loss, metrics,
+                 bufsiz, epochs=100, batch_size=32):
         super(AnonymNNTester, self).__init__(attack_column, sensitive_column)
 
         self.input_veclen = input_veclen
         self.learning_rate = learning_rate
         self.loss = loss
+        self.METRICS = metrics
         self.epochs = epochs
+        self.BUFFER_SIZE = bufsiz
 
         noise_multipliers = np.linspace(0.1, 1.0).tolist() + [pow(10, i) for i in range(1, 4)]
 
@@ -30,7 +34,7 @@ class AnonymNNTester(AnonymTester):
     def load_trained_model(self, fname):
         return keras.models.load_model(fname)
 
-    def get_prediction_accuracy(self, optmodel, x_test_encoded, y_test):
+    def get_prediction_result(self, optmodel, x_test_encoded, y_test):
         pass
 
     def get_art_classifier(self, optmodel, x_train_encoded, y_train):
@@ -50,15 +54,22 @@ class AnonymNNTester(AnonymTester):
         model = self.get_model(self.input_veclen)
         model.compile(optimizer=DPKerasAdamOptimizer(learning_rate=self.learning_rate, l2_norm_clip=1.0,
                                                      noise_multiplier=nm, num_microbatches=1),
-                      loss=self.loss, metrics=['accuracy'])
+                      loss=self.loss, metrics=self.METRICS)
         return model
 
     def save_dpmodel(self, model, fname):
-        model.save(fname)
+        model.save_weights(fname)
 
+    def get_model(self, invec_size):
+        pass
 
     def isNNSubClass(selfs):
         return True
 
     def compute_noise_multiplier(self, eps):
         return np.e**self.f(np.log(eps))
+
+    def make_ds(self, features, labels):
+        ds = tf.data.Dataset.from_tensor_slices((features, labels))  # .cache()
+        ds = ds.shuffle(self.BUFFER_SIZE).repeat()
+        return ds

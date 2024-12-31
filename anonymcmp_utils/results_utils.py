@@ -2,17 +2,38 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def save_results(fname_list, k_trials, acc_proc, acc_vanilla, npfname, yminmax_list, epsilons=None):
+def save_results(fname_list, k_trials, acc_proc, acc_vanilla, npfname, yminmax_array, epsilons=None):
     np.save(npfname, (acc_vanilla, acc_proc), allow_pickle=True)
 
     ylabels = ['Model accuracy', 'Membership attack accuracy', 'Attribute blackbox attack accuracy',
                'Attribute whitebox attack accuracy 1', 'Attribute whitebox attack accuracy 2']
 
+    plot_results(fname_list, ylabels, yminmax_array, acc_vanilla, acc_proc, 0, k_trials, epsilons)
+
+    plot_results(fname_list,
+                 ['Model precision', 'Membership attack precision'],
+                 yminmax_array, acc_vanilla, acc_proc, 1, k_trials, epsilons, prefix='prec')
+
+    plot_results(fname_list,
+                 ['Model recall', 'Membership attack recall'],
+                 yminmax_array, acc_vanilla, acc_proc, 2, k_trials, epsilons, prefix='recall')
+
+    plot_results(fname_list,
+                 ['Model F1-score', 'Membership attack F1-score'],
+                 yminmax_array, acc_vanilla, acc_proc, 3, k_trials, epsilons, prefix='f1')
+
+    plot_results(fname_list,
+                 ['Model roc auc', 'Membership attack roc auc'],
+                 yminmax_array, acc_vanilla, acc_proc, 4, k_trials, epsilons, prefix='auc')
+
+
+def plot_results(fname_list, ylabels, yminmax_array, acc_vanilla, acc_proc, mes_id, k_trials, epsilons, prefix=None):
     for i in range(len(acc_vanilla[0])):
-        #accs_mes = {k: np.array(accs)[:, i] for k, accs in acc_proc.items()}
-        accs_mes = {k: np.array(accs)[:, :, i] for k, accs in acc_proc.items()}
-        plot_anoresult(fname_list[i], k_trials, ylabels[i], accs_mes, acc_vanilla[:,i],
-                       yminmax_list[i][0], yminmax_list[i][1], epsilons)
+        accs_mes = {k: np.array(accs)[:, :, i, mes_id] for k, accs in acc_proc.items()}
+        fname = fname_list[i] if prefix is None else fname_list[i].replace('.png', '_' + prefix + '.png')
+        plot_anoresult(fname, k_trials, ylabels[i],
+                       accs_mes, acc_vanilla[:, i, mes_id],
+                       yminmax_array[mes_id, i, 0], yminmax_array[mes_id, i, 1], epsilons)
 
 
 def plot_mean_std(ax, x, acc, m, k, color=None):
@@ -33,6 +54,8 @@ def plot_anoresult(fname, k_trials, ylabel, acc_proc, acc_vanilla, ylim_min, yli
 
     lns_ano = [plot_mean_std(ax, k_trials, acc, m, k) for (k, acc), m
                in zip(acc_proc.items(), markers) if k != 'Differential privacy']
+
+    ax.set_xscale('log')
 
     lns_vanilla = plot_mean_std(ax, k_trials, np.dot(np.ones_like(k_trials)[:,np.newaxis], acc_vanilla[np.newaxis,:]),
                                '--', "Base line", color='black')
@@ -58,9 +81,9 @@ def plot_anoresult(fname, k_trials, ylabel, acc_proc, acc_vanilla, ylim_min, yli
 
     labs = [l.get_label() for l in lns]
 
-    legend = ax.legend(lns, labs, loc=3, framealpha=1, frameon=True)
-    export_legend(legend, fname.replace('.', '_legend.'))
-    legend.remove()
+    #legend = ax.legend(lns, labs, loc=3, framealpha=1, frameon=True)
+    #export_legend(legend, fname.replace('.', '_legend.'))
+    #legend.remove()
 
     fig.tight_layout()
     plt.savefig(fname)

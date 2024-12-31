@@ -3,7 +3,9 @@ from sklearn.linear_model import LogisticRegression
 from art.estimators.classification.scikitlearn import ScikitlearnLogisticRegression
 import diffprivlib.models as dp
 from joblib import dump, load
+from sklearn.metrics import classification_report, roc_auc_score
 from .anonym_tester import AnonymTester
+from tensorflow.keras.utils import to_categorical
 
 class AnonymLRTester(AnonymTester):
     def __init__(self, attack_column, sensitive_column, max_iter):
@@ -19,8 +21,19 @@ class AnonymLRTester(AnonymTester):
 
         return model
 
-    def get_prediction_accuracy(self, optmodel, x_test_encoded, y_test):
-        return optmodel.score(x_test_encoded, y_test)
+    def get_prediction_result(self, optmodel, x_test_encoded, y_test):
+        pred_acc = optmodel.score(x_test_encoded, y_test)
+
+        prediction = optmodel.predict(x_test_encoded)
+        if len(np.unique(y_test)) == 2:  # binary class
+            report = classification_report(y_test, prediction, labels=[1], digits=3, output_dict=True)['1']
+            auc_score = roc_auc_score(y_test, prediction)
+        else:
+            report = classification_report(y_test, prediction, digits=3, output_dict=True)[
+            'macro avg']
+            auc_score = roc_auc_score(to_categorical(y_test.to_numpy()), to_categorical(prediction))
+
+        return [pred_acc, report['precision'], report['recall'], report['f1-score'], auc_score]
 
     def get_art_classifier(self, optmodel, x_train_encoded, y_train):
         return ScikitlearnLogisticRegression(optmodel)
